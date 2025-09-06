@@ -7,11 +7,15 @@ clc
 
 %Preliminary calculations
 versions={'Main','Low_Sig','Med_Sig','High_Sig','Novar_Sig'};
-copyfile('Programs\*.m','Tables')
-copyfile('Data\Main\*.mat','Tables')
-copyfile('Results\Optimal tariffs\Main\*.mat','Tables')
-copyfile('Results\Trade wars\Main\*.mat','Tables')
-cd 'Tables'
+projectRoot = fileparts(mfilename('fullpath'));
+origDir = pwd;
+tablesDir = fullfile(projectRoot,'Tables');
+vers = versions{1};
+copyfile(fullfile(projectRoot,'Programs','*.m'),tablesDir)
+copyfile(fullfile(projectRoot,'Data','Main','*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Optimal tariffs',vers,'*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 %Constructing Table 1: Parameter estimates
@@ -23,7 +27,7 @@ for j=1:N
 TEMP1=sortrows([TEMP(:,1),TEMP(:,2+j)],-2);
 TOP5=[TOP5,TEMP1(1:5,1)];
 end
-save('TABLE1','TABLE1','TOP5')
+save(fullfile(tablesDir,'TABLE1'),'TABLE1','TOP5')
 
 %Constructing Table 2: Examples
 S1=24; %this is the chemicals, rubber, and plastics industry (low elasticity)
@@ -160,16 +164,16 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE3b=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-mkdir('Tables\Temp')
-copyfile('Programs\*.m','Tables\Temp')
+cd(projectRoot)
+mkdir(fullfile(tablesDir,'Temp'))
+copyfile(fullfile(projectRoot,'Programs','*.m'),fullfile(tablesDir,'Temp'))
 TABLE3c_BAS=[];
 TABLE3c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\Data.mat'],'Tables\Temp')
-    copyfile(['Results\Optimal tariffs\' versions{v} '\*.mat'],'Tables\Temp')
-    cd('Tables\Temp')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'Data.mat'),fullfile(tablesDir,'Temp'))
+    copyfile(fullfile(projectRoot,'Results','Optimal tariffs',versions{v},'*.mat'),fullfile(tablesDir,'Temp'))
+    cd(fullfile(tablesDir,'Temp'))
     mycalculations
     
     GOVERNMENTWELFAREHATSUMMARY=[];
@@ -277,11 +281,11 @@ for v=2:4
     TABLE3c_BAS=[TABLE3c_BAS;[MEANSIGMA TABLE3a_TEMP(8,:)]];
     TABLE3c_POL=[TABLE3c_POL;[MEANSIGMA TABLE3b_TEMP(8,:)]];
     
-    cd ..
-    cd ..
+    cd(projectRoot)
+    cd(projectRoot)
 end
 
-cd('Tables')
+cd(tablesDir)
 TABLE3c=[TABLE3c_BAS;TABLE3c_POL];
 save('TABLE3','TABLE3a','TABLE3b','TABLE3c') %The last column was removed in the published version since tables can only have 9 columns in the AER
 
@@ -391,16 +395,16 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE8b=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-mkdir('Tables\Temp')
-copyfile('Programs\*.m','Tables\Temp')
+cd(projectRoot)
+mkdir(fullfile(tablesDir,'Temp'))
+copyfile(fullfile(projectRoot,'Programs','*.m'),fullfile(tablesDir,'Temp'))
 TABLE8c_BAS=[];
 TABLE8c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\Data.mat'],'Tables\Temp')
-    copyfile(['Results\Optimal tariffs\' versions{v} '\*.mat'],'Tables\Temp')
-    cd('Tables\Temp')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'Data.mat'),fullfile(tablesDir,'Temp'))
+    copyfile(fullfile(projectRoot,'Results','Optimal tariffs',versions{v},'*.mat'),fullfile(tablesDir,'Temp'))
+    cd(fullfile(tablesDir,'Temp'))
     mycalculations
     
     GOVERNMENTWELFAREHATSUMMARY=[];
@@ -510,16 +514,15 @@ for v=2:4
     TABLE8c_BAS=[TABLE8c_BAS;[MEANSIGMA TABLE8a_TEMP(8,:)]];
     TABLE8c_POL=[TABLE8c_POL;[MEANSIGMA TABLE8b_TEMP(8,:)]];
     
-    cd ..
-    cd ..
+    cd(projectRoot)
+    cd(projectRoot)
 end
 
-cd('Tables')
+cd(tablesDir)
 TABLE8c=[TABLE8c_BAS;TABLE8c_POL];
 save('TABLE8','TABLE8a','TABLE8b','TABLE8c') %The last column has been removed in the published version because Tables can only have 9 columns in the AER
 
 %Constructing Table 4: Nashtariffs
-mycalculations
 load NASHTARIFFBASs
 TARIFFCs=NASHTARIFFBASs;
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(TARIFFCs,zeros(N,1),LAMBDABAS);
@@ -566,14 +569,14 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE4b=TEMP(:,1:end-1);
 NOTE=TEMP(:,end);
 
-cd ..
+cd(projectRoot)
 TABLE4c_BAS=[];
 TABLE4c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\Data.mat'],'Tables\Temp')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables\Temp')
-    cd('Tables\Temp')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'Data.mat'),fullfile(tablesDir,'Temp'))
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),fullfile(tablesDir,'Temp'))
+    cd(fullfile(tablesDir,'Temp'))
     load DATA
     mycalculations
     
@@ -626,11 +629,11 @@ for v=2:4
     TABLE4c_BAS=[TABLE4c_BAS;[MEANSIGMA TABLE4a_TEMP(8,:)]];
     TABLE4c_POL=[TABLE4c_POL;[MEANSIGMA TABLE4b_TEMP(8,:)]];
     
-    cd ..
-    cd ..
+    cd(projectRoot)
+    cd(projectRoot)
 end
 
-cd('Tables')
+cd(tablesDir)
 TABLE4c=[TABLE4c_BAS;TABLE4c_POL];
 save('TABLE4','TABLE4a','TABLE4b','TABLE4c') %The last column was removed in the published version for consistency with Table 3
 
@@ -682,14 +685,14 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE9b=TEMP(:,1:end-1);
 NOTE=TEMP(:,end);
 
-cd ..
+cd(projectRoot)
 TABLE9c_BAS=[];
 TABLE9c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\Data.mat'],'Tables\Temp')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables\Temp')
-    cd('Tables\Temp')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'Data.mat'),fullfile(tablesDir,'Temp'))
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),fullfile(tablesDir,'Temp'))
+    cd(fullfile(tablesDir,'Temp'))
     mycalculations
     
     load MFNNASHTARIFFBASs
@@ -741,20 +744,19 @@ for v=2:4
     TABLE9c_BAS=[TABLE9c_BAS;[MEANSIGMA TABLE9a_TEMP(8,:)]];
     TABLE9c_POL=[TABLE9c_POL;[MEANSIGMA TABLE9b_TEMP(8,:)]];
     
-    cd ..
-    cd ..
+    cd(projectRoot)
+    cd(projectRoot)
 end
 
-cd('Tables')
+cd(tablesDir)
 TABLE9c=[TABLE9c_BAS;TABLE9c_POL];
 save('TABLE9','TABLE9a','TABLE9b','TABLE9c') %The last column was removed in the published version for consistency with Table 8
 
 %Constructing Table 5, 6, and 7: Cooperative tariffs
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Fact\*.mat','Tables')
-cd('Tables')
-mycalculations
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Fact','*.mat'),tablesDir)
+cd(tablesDir)
 
 LAMBDA=LAMBDABAS;
 load RESTRICTEDCOOPERATIVETARIFFBASs
@@ -827,11 +829,11 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE5b_FACT=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Nash_Bas\*.mat','Tables')
-copyfile('Results\Trade wars\Main\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Bas','*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 load NASHTARIFFBASs
@@ -846,7 +848,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -890,11 +891,11 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE5a_NASH_UNREST=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Nash_Pol\*.mat','Tables')
-copyfile('Results\Trade wars\Main\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Pol','*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 load NASHTARIFFPOLs
@@ -908,7 +909,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -930,10 +930,10 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE5b_NASH=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Free\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Free','*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 LAMBDA=LAMBDABAS;
@@ -946,7 +946,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(zeros(N,N,S),[1 3 2]),[N*S,N,1]);  %these are now zero tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -1039,15 +1038,15 @@ TABLE5a_UNREST=[];
 for col=1:4
     TABLE5a_UNREST=[TABLE5a_UNREST,[TABLE5a_NASH_UNREST(:,col) TABLE5a_FACT_UNREST(:,col) TABLE5a_FREE_UNREST(:,col)]];
 end
-cd ..
+cd(projectRoot)
 
 TABLE5c_BAS=[];
 TABLE5c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Fact\*.mat'],'Tables')
-    cd('Tables')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Fact','*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     LAMBDA=LAMBDABAS;
@@ -1121,11 +1120,11 @@ for v=2:4
     TABLE5b_FACT_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Nash_Bas\*.mat'],'Tables')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Nash_Bas','*.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     load NASHTARIFFBASs
@@ -1184,11 +1183,11 @@ for v=2:4
     TABLE5a_NASH_UNREST_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Nash_Pol\*.mat'],'Tables')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Nash_Pol','*.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     load NASHTARIFFPOLs
@@ -1224,10 +1223,10 @@ for v=2:4
     TABLE5b_NASH_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Free\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Free','*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     LAMBDA=LAMBDABAS;
@@ -1339,16 +1338,15 @@ for v=2:4
     TABLE5c_BAS=[TABLE5c_BAS;[MEANSIGMA TABLE5a_TEMP(8,:)]];
     TABLE5c_POL=[TABLE5c_POL;[MEANSIGMA TABLE5b_TEMP(8,:)]];
     
-    cd ..    
+    cd(projectRoot)    
 end
 TABLE5c=[TABLE5c_BAS;TABLE5c_POL];
-save('Tables\TABLE5','TABLE5a','TABLE5b','TABLE5c') %This table was split up into Tables 5, 6, and 7 in the published version since tables can only have 9 columns in the AER
+save(fullfile(tablesDir,'TABLE5'),'TABLE5a','TABLE5b','TABLE5c') %This table was split up into Tables 5, 6, and 7 in the published version since tables can only have 9 columns in the AER
 
 %Constructing Table 10, 11, and 12: Cooperative tariffs under MFN
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Fact\*.mat','Tables')
-cd('Tables')
-mycalculations
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Fact','*.mat'),tablesDir)
+cd(tablesDir)
 
 LAMBDA=LAMBDABAS;
 load RESTRICTEDMFNCOOPERATIVETARIFFBASs
@@ -1421,11 +1419,11 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE10b_FACT=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Nash_Bas\*.mat','Tables')
-copyfile('Results\Trade wars\Main\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Bas','*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 load NASHTARIFFBASs
@@ -1440,7 +1438,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -1484,11 +1481,11 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE10a_NASH_UNREST=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Nash_Pol\*.mat','Tables')
-copyfile('Results\Trade wars\Main\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Pol','*.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 load NASHTARIFFPOLs
@@ -1502,7 +1499,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -1524,10 +1520,10 @@ TEMP=round(10*[TEMP;mean(TEMP)])./10;
 TABLE10b_NASH=TEMP(:,1:end-2);
 NOTE=TEMP(:,end-1:end);
 
-cd ..
-copyfile('Data\Main\DATA.mat','Tables')
-copyfile('Results\Trade talks\Main\Free\*.mat','Tables')
-cd('Tables')
+cd(projectRoot)
+copyfile(fullfile(projectRoot,'Data','Main','DATA.mat'),tablesDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Free','*.mat'),tablesDir)
+cd(tablesDir)
 mycalculations
 
 LAMBDA=LAMBDABAS;
@@ -1540,7 +1536,6 @@ TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at
 TARIFF=reshape(permute(zeros(N,N,S),[1 3 2]),[N*S,N,1]);  %these are now zero tariffs
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 
-mycalculations
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(COOPERATIVETARIFFs,zeros(N,1),LAMBDA);
 TEMP=(1-repmat(eye(N),[1 1 S]));
 INTTRADEs=TRADEs.*TEMP;
@@ -1634,14 +1629,14 @@ for col=1:4
     TABLE10a_UNREST=[TABLE10a_UNREST,[TABLE10a_NASH_UNREST(:,col) TABLE10a_FACT_UNREST(:,col) TABLE10a_FREE_UNREST(:,col)]];
 end
 
-cd ..
+cd(projectRoot)
 TABLE10c_BAS=[];
 TABLE10c_POL=[];
 
 for v=2:4
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Fact\*.mat'],'Tables')
-    cd('Tables')
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Fact','*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     LAMBDA=LAMBDABAS;
@@ -1715,11 +1710,11 @@ for v=2:4
     TABLE10b_FACT_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Nash_Bas\*.mat'],'Tables')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Nash_Bas','*.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     load NASHTARIFFBASs
@@ -1778,11 +1773,11 @@ for v=2:4
     TABLE10a_NASH_UNREST_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Nash_Pol\*.mat'],'Tables')
-    copyfile(['Results\Trade wars\' versions{v} '\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Nash_Pol','*.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade wars',versions{v},'*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     load NASHTARIFFPOLs
@@ -1818,10 +1813,10 @@ for v=2:4
     TABLE10b_NASH_TEMP=TEMP(:,1:end-2);
     NOTE=TEMP(:,end-1:end);
 
-    cd ..
-    copyfile(['Data\' versions{v} '\DATA.mat'],'Tables')
-    copyfile(['Results\Trade talks\' versions{v} '\Free\*.mat'],'Tables')
-    cd('Tables')
+    cd(projectRoot)
+    copyfile(fullfile(projectRoot,'Data',versions{v},'DATA.mat'),tablesDir)
+    copyfile(fullfile(projectRoot,'Results','Trade talks',versions{v},'Free','*.mat'),tablesDir)
+    cd(tablesDir)
     mycalculations
 
     LAMBDA=LAMBDABAS;
@@ -1933,18 +1928,19 @@ for v=2:4
     TABLE10c_BAS=[TABLE10c_BAS;[MEANSIGMA TABLE10a_TEMP(8,:)]];
     TABLE10c_POL=[TABLE10c_POL;[MEANSIGMA TABLE10b_TEMP(8,:)]];
     
-    cd ..    
+    cd(projectRoot)    
 end
 TABLE10c=[TABLE10c_BAS;TABLE10c_POL];
-save('Tables\TABLE10','TABLE10a','TABLE10b','TABLE10c') %This table was split into Tables 10, 11, and 12 in the published version since tables can only have up to 9 columns in the AER
+save(fullfile(tablesDir,'TABLE10'),'TABLE10a','TABLE10b','TABLE10c') %This table was split into Tables 10, 11, and 12 in the published version since tables can only have up to 9 columns in the AER
 
 %Cleaning up
-copyfile('Tables\TABLE*.mat','Tables\Temp')
-delete('Tables\*.m')
-delete('Tables\*.mat')
-copyfile('Tables\Temp\TABLE*.mat','Tables')
-delete('Tables\Temp\*.*')
-rmdir('Tables\Temp')
+copyfile(fullfile(tablesDir,'TABLE*.mat'),fullfile(tablesDir,'Temp'))
+delete(fullfile(tablesDir,'*.m'))
+delete(fullfile(tablesDir,'*.mat'))
+copyfile(fullfile(tablesDir,'Temp','TABLE*.mat'),tablesDir)
+delete(fullfile(tablesDir,'Temp','*.*'))
+rmdir(fullfile(tablesDir,'Temp'))
+cd(origDir)
 clear all
 close all
 clc

@@ -7,11 +7,15 @@ close all
 clc
 
 versions={'Main','Low_Sig','Medlow_Sig','Medhigh_Sig','High_Sig','Novar_Sig'};
-copyfile('Data\Main\*.mat','Figures')
-copyfile('Programs\*.m','Figures')
-copyfile('Results\Optimal tariffs\Main\*.mat','Figures')
-copyfile('Results\Trade wars\Main\*.mat','Figures')
-cd('Figures')
+projectRoot = fileparts(mfilename('fullpath'));
+origDir = pwd;
+figDir = fullfile(projectRoot,'Figures');
+vers = versions{1};
+copyfile(fullfile(projectRoot,'Data','Main','*.mat'),figDir)
+copyfile(fullfile(projectRoot,'Programs','*.m'),figDir)
+copyfile(fullfile(projectRoot,'Results','Optimal tariffs',vers,'*.mat'),figDir)
+copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),figDir)
+cd(figDir)
 mycalculations
 
 %Constructing Figure 1: Optimal tariffs without lobbying
@@ -419,9 +423,9 @@ saveas (gcf,'figure4','fig');
 close
 
 %Constructing Figure 5: Cooperative tariffs starting at Nash tariffs
-cd ..
-copyfile('Results\Trade talks\Main\Nash_Bas\*.mat','Figures')
-cd('Figures')
+cd(origDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Bas','*.mat'),figDir)
+cd(figDir)
 load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
@@ -556,9 +560,9 @@ close
 
 %Constructing Figure 6: Cooperative tariffs starting at factual tariffs
 
-cd ..
-copyfile('Results\Trade talks\Main\Fact\*.mat','Figures')
-cd('Figures')
+cd(origDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Fact','*.mat'),figDir)
+cd(figDir)
 load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
@@ -693,9 +697,9 @@ close
 
 %Constructing Figure 7: Cooperative tariffs starting at free trade
 
-cd ..
-copyfile('Results\Trade talks\Main\Free\*.mat','Figures')
-cd('Figures')
+cd(origDir)
+copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Free','*.mat'),figDir)
+cd(figDir)
 load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
@@ -943,9 +947,9 @@ saveas (gcf,'figure8','fig');
 close
 
 %Cleaning up
-delete *.mat
-delete *.m
-cd ..
+delete(fullfile(figDir,'*.mat'))
+delete(fullfile(figDir,'*.m'))
+cd(origDir)
 
 clear all
 close all

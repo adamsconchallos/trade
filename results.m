@@ -19,7 +19,8 @@
 %=======================================================================
 
 %% --- USER SETTINGS ----------------------------------------------------
-projectRoot = "C:\Users\adams\OneDrive - University of Florida\Research\Emran_trade\Data_MS_AER_2012_0527";
+projectRoot = fileparts(mfilename("fullpath"));
+origDir     = pwd;
 versions    = {"Main"};
 useParallel = true;
 useToyData = true;            % ← flip to false for the full dataset
@@ -190,6 +191,8 @@ end
 % PART 5 – §VIII: Robustness / Online App.  ~contextual tweaks
 % ----------------------------------------------------------------------
 recalcRestrictedCoop(projectRoot,versionsFull);
+
+cd(origDir);
 
 %% ========= LOCAL FUNCTIONS ===========================================
 function mkdir_if(p)
