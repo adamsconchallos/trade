@@ -397,9 +397,9 @@ function polishCoop(r,v)
         cd(fullfile(base,k{1}));
         load DATA.mat
         mycalculations
-        load('UNRESTRICTEDCOOPERATIVETARIFFBASs.mat'); % UM
-        U = mycooperativetariff(LAMBDABAS,-5,10,0,UNRESTRICTEDCOOPERATIVETARIFFBASs);
-        save UNRESTRICTEDCOOPERATIVETARIFFBASs.mat U
+        S =  load('UNRESTRICTEDMFNCOOPERATIVETARIFFBASs.mat','UM');
+        U =  mycooperativetariff(LAMBDABAS,-5,10,0,UM);
+        save('UNRESTRICTEDCOOPERATIVETARIFFBASs.mat','U');
     end
     cd(r);
 end
