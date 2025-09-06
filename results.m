@@ -397,9 +397,9 @@ function polishCoop(r,v)
         cd(fullfile(base,k{1}));
         load DATA.mat
         mycalculations
-        load('UNRESTRICTEDMFNCOOPERATIVETARIFFBASs.mat','UM');
-        U = mycooperativetariff(LAMBDABAS,-5,10,0,UM);
-        save UNRESTRICTEDCOOPERATIVETARIFFBASs.mat U
+        data = load('UNRESTRICTEDMFNCOOPERATIVETARIFFBASs.mat','UM');
+        U = mycooperativetariff(LAMBDABAS,-5,10,0,data.UM);
+        save('UNRESTRICTEDCOOPERATIVETARIFFBASs.mat','U');
     end
     cd(r);
 end
@@ -410,4 +410,4 @@ function cleanMFiles(f)
     for i = 1:numel(d), delete(fullfile(d(i).folder,d(i).name)); end
 end
 
-function recalcRestrictedCoop(r,vs),src=fullfile(r,'Results','Trade talks',vs{2},'Free','RESTRICTEDCOOPERATIVETARIFFPOLs.mat');tgt=fullfile(r,'Results','Trade talks',vs{1},'Free');copyfile(src,tgt);cd(tgt);load DATA.mat;mycalculations;load RESTRICTEDCOOPERATIVETARIFFPOLs.mat;R=mymcooperativetariff(LAMBDAPOL,0,10,0,RESTRICTEDCOOPERATIVETARIFFPOLs);save RESTRICTEDCOOPERATIVETARIFFPOLs.mat R;cd(r);end
+function recalcRestrictedCoop(r,vs),src=fullfile(r,'Results','Trade talks',vs{2},'Free','RESTRICTEDCOOPERATIVETARIFFPOLs.mat');tgt=fullfile(r,'Results','Trade talks',vs{1},'Free');copyfile(src,tgt);cd(tgt);load DATA.mat;mycalculations;load RESTRICTEDCOOPERATIVETARIFFPOLs.mat;R=mycooperativetariff(LAMBDAPOL,0,10,0,RESTRICTEDCOOPERATIVETARIFFPOLs);save RESTRICTEDCOOPERATIVETARIFFPOLs.mat R;cd(r);end
