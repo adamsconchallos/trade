@@ -1,0 +1,954 @@
+%---------------------------------------------------------------
+%This program constructs all figures and some auxilliary results
+%---------------------------------------------------------------
+%Preliminary calculations
+clear all
+close all
+clc
+
+versions={'Main','Low_Sig','Medlow_Sig','Medhigh_Sig','High_Sig','Novar_Sig'};
+copyfile('Data\Main\*.mat','Figures')
+copyfile('Programs\*.m','Figures')
+copyfile('Results\Optimal tariffs\Main\*.mat','Figures')
+copyfile('Results\Trade wars\Main\*.mat','Figures')
+cd('Figures')
+mycalculations
+
+%Constructing Figure 1: Optimal tariffs without lobbying
+load OPTIMALTARIFFBAS
+for j=1:N
+OPTIMALTARIFFj=OPTIMALTARIFFBAS(:,j);
+TEMP=reshape(OPTIMALTARIFFj,N-1,S);
+TEMP=[TEMP(1:j-1,:);zeros(1,S);TEMP(j:end,:)];
+TEMP=[100*TEMP;SIGMA'];
+TEMP=sortrows(TEMP',8)';
+TEMP=[TEMP;1:1:S];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Optimal tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','ROW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Optimal tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:2:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Optimal tariff in %');
+    Names(j)=[];
+    legend1=legend(Names);
+    set(legend1,'FontSize',7,'location','southwest');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))
+end
+end
+saveas (gcf,'figure1','fig');
+close
+
+%Constructing Figure 2: Optimal tariffs with lobbying
+for j=1:N
+TEMP=sortrows(100*[TARGETTARIFF(:,j),MFNOPTIMALTARIFFPOL(:,j)],1);
+TEMP=[TEMP,[1:1:S]'];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 250])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Optimal tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    if j==5
+        axis([1 S 0 800])
+    elseif j~=5
+        axis([1 S 0 250])
+    end
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Optimal tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 250])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Optimal tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Optimal tariff in %');
+    legend1=legend({'Data' 'Model'});
+    set(legend1,'FontSize',7,'location','northwest');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))   
+end
+end
+saveas (gcf,'figure2','fig');
+close
+
+%Constructing Figure 3: Nash tariffs without lobbying
+load NASHTARIFFBASs
+for j=1:N
+TEMP=reshape(NASHTARIFFBASs(:,j,:),N,S);    
+TEMP=[100*TEMP;SIGMA'];
+TEMP=sortrows(TEMP',8)';
+TEMP=[TEMP;1:1:S];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Nash tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','ROW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Nash tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 100])
+    set(gca,'fontsize',7,'xtick',1:2:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Nash tariff in %');
+    Names(j)=[];
+    legend1=legend(Names);
+    set(legend1,'FontSize',7,'location','southwest');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))
+end
+end
+saveas (gcf,'figure3','fig');
+close
+
+%Constructing Figure 4: Nash tariffs with lobbying
+load MFNNASHTARIFFPOLs
+MFNNASHTARIFFPOLCLEANs=MFNNASHTARIFFPOLs;
+j=5;
+UB=max(TARGETTARIFF(:,j)+0.03,2.25);
+MFNOPTIMALTARIFFj=mymfnoptimaltariffj(j,MFNNASHTARIFFPOLs,LAMBDAPOL,0,UB,TARGETTARIFF(:,j)); %Recomputing for Japan with same UB as in Figure 2
+TEMP=repmat(reshape(MFNOPTIMALTARIFFj,[1 1 S]),[N-1,1,1]);
+MFNNASHTARIFFPOLCLEANs(:,j,:)=[TEMP(1:j-1,:,:);zeros(1,1,S);TEMP(j:end,:,:)];
+save('MFNNASHTARIFFPOLCLEANs','MFNNASHTARIFFPOLCLEANs')
+
+MFNNASHTARIFFPOLCLEAN=zeros(S,N);
+for j=1:N
+    TEMP=MFNNASHTARIFFPOLCLEANs(:,j,:);
+    TEMP(j,:,:)=[];
+    MFNNASHTARIFFPOLCLEAN(:,j)=reshape(mean(TEMP,1),S,1);
+end
+
+for j=1:N
+TEMP=sortrows(100*[TARGETTARIFF(:,j),MFNNASHTARIFFPOLCLEAN(:,j)],1);
+TEMP=[TEMP,[1:1:S]'];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 250])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Nash tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    if j==5
+        axis([1 S 0 800])
+    elseif j~=5
+        axis([1 S 0 250])
+    end
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Nash tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    scatter(TEMP(:,3),TEMP(:,1),10,'k','*')
+    hold on
+    scatter(TEMP(:,3),TEMP(:,2),10,'k','o')
+    hold on
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S 0 250])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Nash tariffs ' Names{j}])
+    xlabel('Industry rank (lowest tariff to highest tariff)');
+    ylabel('Nash tariff in %');
+    legend1=legend({'Data' 'Model'});
+    set(legend1,'FontSize',7,'location','northwest');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))   
+end
+end
+saveas (gcf,'figure4','fig');
+close
+
+%Constructing Figure 5: Cooperative tariffs starting at Nash tariffs
+cd ..
+copyfile('Results\Trade talks\Main\Nash_Bas\*.mat','Figures')
+cd('Figures')
+load UNRESTRICTEDCOOPERATIVETARIFFBASs
+COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
+
+for j=1:N
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=[100*TEMP;SIGMA'];
+TEMP=sortrows(TEMP',8)';
+TEMP=[TEMP;1:1:S];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','ROW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:2:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+    Names(j)=[];
+    legend1=legend(Names);
+    set(legend1,'FontSize',7,'location','southeast');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))
+end
+end
+saveas (gcf,'figure5','fig');
+close
+
+%Constructing Figure 6: Cooperative tariffs starting at factual tariffs
+
+cd ..
+copyfile('Results\Trade talks\Main\Fact\*.mat','Figures')
+cd('Figures')
+load UNRESTRICTEDCOOPERATIVETARIFFBASs
+COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
+
+for j=1:N
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=[100*TEMP;SIGMA'];
+TEMP=sortrows(TEMP',8)';
+TEMP=[TEMP;1:1:S];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','ROW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:2:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+    Names(j)=[];
+    legend1=legend(Names);
+    set(legend1,'FontSize',7,'location','southeast');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))
+end
+end
+saveas (gcf,'figure6','fig');
+close
+
+%Constructing Figure 7: Cooperative tariffs starting at free trade
+
+cd ..
+copyfile('Results\Trade talks\Main\Free\*.mat','Figures')
+cd('Figures')
+load UNRESTRICTEDCOOPERATIVETARIFFBASs
+COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
+
+for j=1:N
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=[100*TEMP;SIGMA'];
+TEMP=sortrows(TEMP',8)';
+TEMP=[TEMP;1:1:S];
+if j<=3
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 0 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j>3 && j<7
+    subplot(4,3,6+j)
+    position=get(gca,'position');
+    position=position+[0.01 -0.04 -0.02 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','ROW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:4:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+elseif j==7
+    subplot(4,3,[1 6])
+    position=get(gca,'position');
+    position=position+[0.2 0.04 -0.4 0];
+    subplot('position',position)
+    if j~=1
+    scatter(TEMP(9,:),TEMP(1,:),10,'k','o')
+    hold on
+    end
+    if j~=2
+    scatter(TEMP(9,:),TEMP(2,:),10,'k','+')
+    hold on
+    end
+    if j~=3
+    scatter(TEMP(9,:),TEMP(3,:),10,'k','*')
+    hold on
+    end
+    if j~=4
+    scatter(TEMP(9,:),TEMP(4,:),10,'k','x')
+    hold on
+    end
+    if j~=5
+    scatter(TEMP(9,:),TEMP(5,:),10,'k','s')
+    hold on
+    end
+    if j~=6
+    scatter(TEMP(9,:),TEMP(6,:),10,'k','d')
+    hold on
+    end
+    if j~=7
+    scatter(TEMP(9,:),TEMP(7,:),10,'k','^')
+    end
+    Names={'Brazil','China','EU','India','Japan','RoW','US'};
+    axis([1 S -50 50])
+    set(gca,'fontsize',7,'xtick',1:2:S);
+    title(['Cooperative tariffs ' Names{j}])
+    xlabel('Industry rank (lowest sigma to highest sigma)');
+    ylabel('Cooperative tariff in %');
+    Names(j)=[];
+    legend1=legend(Names);
+    set(legend1,'FontSize',7,'location','southeast');
+    M=findobj(legend1,'type','patch');
+    set(M,'MarkerSize',sqrt(10))
+end
+end
+saveas (gcf,'figure7','fig');
+close
+
+%Constructing Figure 8: Liberalization scenarios starting at MFN Nash tariffs
+load MFNNASHTARIFFBASs
+LAMBDA=LAMBDABAS;
+NASHTARIFFs=MFNNASHTARIFFBASs;
+
+[GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs LOBBYWELFAREHAT EXPENDITUREHAT]=mycounterfactuals(NASHTARIFFs,zeros(N,1),LAMBDA);
+TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at Nash tariffs
+TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
+save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
+mycalculations
+
+GSUM=[];
+WSUM=[];
+WAGESUM=[];
+PROFITSSUM=[];
+for r=1:-0.05:0 %Simulating non-MFN tariff reduction between US, EU, and Japan starting at MFN Nash tariffs
+    TARIFFCs=TARIFFs;
+    for j=[3 5 7]
+        for i=[3 5 7]
+            TARIFFCs(i,j,:)=r*TARIFFCs(i,j,:);
+        end
+    end
+    [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs LOBBYWELFAREHAT EXPENDITUREHAT]=mycounterfactuals(TARIFFCs,zeros(N,1),LAMBDA);
+    GSUM=[GSUM;[100*(r-1) 100*(GOVERNMENTWELFAREHAT'-1)]];
+    WSUM=[WSUM;[100*(r-1) 100*(WELFAREHAT'-1)]];
+    PROFITS=sum((1./SIGMAs_N_1_S).*sum(TRADEs,2),3);
+    PROFITSC=sum((1./SIGMAs_N_1_S).*sum(TRADECs,2),3);
+    PROFITSHAT=PROFITSC./PROFITS;
+    PROFITSHATADJ=PROFITSHAT./WAGEHAT;
+    PROFITSSUM=[PROFITSSUM;[100*(r-1) 100*(PROFITSHATADJ'-1)]];
+    WAGEHAT=WAGEHAT-mean(WAGEHAT)+1;
+    WAGESUM=[WAGESUM;[100*(r-1) 100*(WAGEHAT'-1)]];   
+end
+
+GSUM=[GSUM(:,1) mean([GSUM(:,4) GSUM(:,6) GSUM(:,8)],2) mean([GSUM(:,2) GSUM(:,3) GSUM(:,5)  GSUM(:,7)],2)];
+PROFITSSUM=[PROFITSSUM(:,1) mean([PROFITSSUM(:,4) PROFITSSUM(:,6) PROFITSSUM(:,8)],2) mean([PROFITSSUM(:,2) PROFITSSUM(:,3) PROFITSSUM(:,5)  PROFITSSUM(:,7)],2)];
+WAGESUM=[WAGESUM(:,1) mean([WAGESUM(:,4) WAGESUM(:,6) WAGESUM(:,8)],2) mean([WAGESUM(:,2) WAGESUM(:,3) WAGESUM(:,5)  WAGESUM(:,7)],2)];
+
+subplot(2,2,1)
+plot(-GSUM(:,1),GSUM(:,2),'kx','MarkerSize',sqrt(10))
+hold on
+plot(-GSUM(:,1),GSUM(:,3),'ko','MarkerSize',sqrt(10))
+axis([0 100 -0.5 1.5])
+set(gca,'fontsize',7,'xtick',0:20:100);
+title('Non-MFN liberalization among EU, Japan, and US')
+xlabel('Tariff cut relative to Nash in %');
+ylabel('Average welfare change in %');
+legend1=legend({'Liberalizing countries' 'Other countries'});
+set(legend1,'FontSize',7,'location','northwest');
+
+subplot(2,2,2)
+plot(-WAGESUM(:,1),WAGESUM(:,2),'kx','MarkerSize',sqrt(10))
+hold on
+plot(-WAGESUM(:,1),WAGESUM(:,3),'ko','MarkerSize',sqrt(10))
+axis([0 100 -1 1.5])
+set(gca,'fontsize',7,'xtick',0:20:100);
+title('Non-MFN liberalization among EU, Japan, and US')
+xlabel('Tariff cut relative to Nash in %');
+ylabel('Average wage change in %');
+legend1=legend({'Liberalizing countries' 'Other countries'});
+set(legend1,'FontSize',7,'location','northwest');
+
+GSUM=[];
+WSUM=[];
+WAGESUM=[];
+PROFITSSUM=[];
+for r=1:-0.05:0 %Simulating MFN tariff reduction between US, EU, and Japan starting at MFN Nash tariffs
+    TARIFFCs=TARIFFs;
+    for j=[3 5 7]
+        TARIFFCs(:,j,:)=r*TARIFFCs(:,j,:);
+    end
+    [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs LOBBYWELFAREHAT EXPENDITUREHAT]=mycounterfactuals(TARIFFCs,zeros(N,1),LAMBDA);
+    GSUM=[GSUM;[100*(r-1) 100*(GOVERNMENTWELFAREHAT'-1)]];
+    WSUM=[WSUM;[100*(r-1) 100*(WELFAREHAT'-1)]];
+    PROFITS=sum((1./SIGMAs_N_1_S).*sum(TRADEs,2),3);
+    PROFITSC=sum((1./SIGMAs_N_1_S).*sum(TRADECs,2),3);
+    PROFITSHAT=PROFITSC./PROFITS;
+    PROFITSHATADJ=PROFITSHAT./WAGEHAT;
+    PROFITSSUM=[PROFITSSUM;[100*(r-1) 100*(PROFITSHATADJ'-1)]];
+    WAGEHAT=WAGEHAT-mean(WAGEHAT)+1;
+    WAGESUM=[WAGESUM;[100*(r-1) 100*(WAGEHAT'-1)]];  
+end
+
+GSUM=[GSUM(:,1) mean([GSUM(:,4) GSUM(:,6) GSUM(:,8)],2) mean([GSUM(:,2) GSUM(:,3) GSUM(:,5)  GSUM(:,7)],2)];
+PROFITSSUM=[PROFITSSUM(:,1) mean([PROFITSSUM(:,4) PROFITSSUM(:,6) PROFITSSUM(:,8)],2) mean([PROFITSSUM(:,2) PROFITSSUM(:,3) PROFITSSUM(:,5)  PROFITSSUM(:,7)],2)];
+WAGESUM=[WAGESUM(:,1) mean([WAGESUM(:,4) WAGESUM(:,6) WAGESUM(:,8)],2) mean([WAGESUM(:,2) WAGESUM(:,3) WAGESUM(:,5)  WAGESUM(:,7)],2)];
+
+subplot(2,2,3)
+plot(-GSUM(:,1),GSUM(:,2),'kx','MarkerSize',sqrt(10))
+hold on
+plot(-GSUM(:,1),GSUM(:,3),'ko','MarkerSize',sqrt(10))
+axis([0 100 -1 4])
+set(gca,'fontsize',7,'xtick',0:20:100);
+title('MFN liberalization among EU, Japan, and US')
+xlabel('Tariff cut relative to Nash in %');
+ylabel('Average welfare change in %');
+legend1=legend({'Liberalizing countries' 'Other countries'});
+set(legend1,'FontSize',7,'location','northwest');
+
+subplot(2,2,4)
+plot(-WAGESUM(:,1),WAGESUM(:,2),'kx','MarkerSize',sqrt(10))
+hold on
+plot(-WAGESUM(:,1),WAGESUM(:,3),'ko','MarkerSize',sqrt(10))
+axis([0 100 -15 15])
+set(gca,'fontsize',7,'xtick',0:20:100);
+title('MFN liberalization among EU, Japan, and US')
+xlabel('Tariff cut relative to Nash in %');
+ylabel('Average wage change in %');
+legend1=legend({'Liberalizing countries' 'Other countries'});
+set(legend1,'FontSize',7,'location','northwest');
+
+saveas (gcf,'figure8','fig');
+close
+
+%Cleaning up
+delete *.mat
+delete *.m
+cd ..
+
+clear all
+close all
+clc
+
+%This is checked and correct

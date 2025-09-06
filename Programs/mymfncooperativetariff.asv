@@ -1,0 +1,211 @@
+function [MFNCOOPERATIVETARIFFs, GOVERNMENTWELFAREHAT, EXPENDITUREHAT, WAGEHAT, ceq] = ...
+    mymfncooperativetariff(LAMBDA, LBj, UBj, LIBONLY, MFNCOOPERATIVETARIFFGUESSs)
+%MYMFNCOOPERATIVETARIFF  Compute cooperative MFN tariffs (per Ossa 2014 framework).
+%
+% Syntax:
+%   [T, Ghat, Ehat, What, ceq] = mymfncooperativetariff(LAMBDA, LBj, UBj, LIBONLY)
+%   [T, Ghat, Ehat, What, ceq] = mymfncooperativetariff(LAMBDA, LBj, UBj, LIBONLY, Tguess)
+%
+% Inputs:
+%   LAMBDA   : [N×S] political-economy weights (λ), with λ = 1 for baseline/BAS.
+%   LBj      : scalar lower bound on *import* MFN tariff (in levels, not logs).
+%   UBj      : scalar upper bound on *import* MFN tariff (ignored if LIBONLY==1).
+%   LIBONLY  : 0 → allow ↑/↓; 1 → only tariff reductions (upper bound forced to 1 in transformed space).
+%   Tguess   : (optional) bilateral MFN tariff *cube* guess, size N×N×S (diagonal = 0).
+%
+% Outputs:
+%   MFNCOOPERATIVETARIFFs : [N×N×S] cooperative MFN tariffs (zeros on diagonal).
+%   GOVERNMENTWELFAREHAT  : [N×1]    government welfare indices (levels).
+%   EXPENDITUREHAT        : [N×1]    expenditure indices (levels).
+%   WAGEHAT               : [N×1]    wage indices (levels).
+%   ceq                   : nonlinear constraint equality vector at optimum.
+%
+% Side-effects (to mirror original code paths):
+%   Saves the following files in the CWD depending on {λ, LBj} branch:
+%     BAS (λ==1):   RESTRICTEDMFNCOOPERATIVETARIFFBASs.mat   or  UNRESTRICTEDMFNCOOPERATIVETARIFFBASs.mat
+%     POL (λ≠1):    RESTRICTEDMFNCOOPERATIVETARIFFPOLs.mat   or  UNRESTRICTEDMFNCOOPERATIVETARIFFPOLs.mat
+%
+% Dependencies (must exist on path and use globals consistently):
+%   mycalculations, mycounterfactuals, myfuncoop, mymfnconcoop
+%
+% Notes:
+%   • Dimensions: N = countries, S = sectors. Tariff cube is N×N×S with zeros on i=j.
+%   • The optimization runs in transformed space to improve conditioning (see SCALING & TAU).
+%   • This function is intentionally conservative about behavior to match legacy scripts.
+
+  %-----------------------------%
+  % Globals & model quantities  %
+  %-----------------------------%
+  global ARG SCALING TAU   % Used by objective/constraints in legacy code
+  mycalculations           % must populate N, S, TARIFFs, SIGMA, etc.
+
+  %--------------------%
+  % Input sanity checks %
+  %--------------------%
+  validateattributes(LAMBDA, {'double'}, {'2d','nonempty'});
+  assert(isscalar(LBj) && isscalar(UBj) && isscalar(LIBONLY), 'LBj, UBj, and LIBONLY must be scalars.');
+  assert(LIBONLY==0 || LIBONLY==1, 'LIBONLY must be 0 or 1.');
+
+  % Dimensions inferred from environment (set by mycalculations)
+  % N, S, TARIFFs are assumed in workspace after mycalculations
+  try
+      N; S; TARIFFs; %#ok<VUNUS>
+  catch
+      error('Required symbols N, S, and TARIFFs must be defined by mycalculations.');
+  end
+  assert(isequal(size(TARIFFs), [N, N, S]), 'TARIFFs must be N×N×S.');
+
+  %-------------------------------------%
+  % Bookkeeping for the optimization    %
+  %-------------------------------------%
+  ARG     = LAMBDA - 1;  % used downstream
+  SCALING = 0.1;         % tariff step scaling (legacy choice)
+
+  % ----------------------------------------------------------- %
+  % 1) Build MFN import-tariff guess (S×N) and bilateral guess  %
+  % ----------------------------------------------------------- %
+  % If a bilateral guess is provided, coerce it to N×N×S first.
+  if nargin > 4 && ~isempty(MFNCOOPERATIVETARIFFGUESSs)
+      MFNCOOPERATIVETARIFFGUESSs = alignToNNScube(MFNCOOPERATIVETARIFFGUESSs, TARIFFs);
+      % build MFN import guess by averaging over partners i≠j
+      MFNCOOPERATIVEIMPTARIFFGUESS = zeros(S, N);
+      for j = 1:N
+          tmp = mean(MFNCOOPERATIVETARIFFGUESSs([1:j-1, j+1:N], j, :), 1);  % 1×1×S
+          MFNCOOPERATIVEIMPTARIFFGUESS(:, j) = reshape(tmp, S, 1);
+      end
+  else
+      % No guess supplied: replicate original logic
+      if isequal(LAMBDA, ones(N, S))
+          % BAS: target inverse markup (eliminate markup distortions)
+          INVMARKUP = (SIGMA - 1) ./ SIGMA;              % [S×1] or [S×?], expect S×1
+          TEMP      = 0.25 * (INVMARKUP ./ mean(INVMARKUP) - 1);  % [S×1]
+          MFNCOOPERATIVEIMPTARIFFGUESS = repmat(TEMP, 1, N);      % S×N
+
+          % Build a bilateral cube guess with zeros on diagonals
+          base = repmat(reshape(TEMP, [1, 1, S]), [N-1, N, 1]);   % (N-1)×N×S
+          MFNCOOPERATIVETARIFFGUESSs = zeros(N, N, S);
+          for j = 1:N
+              MFNCOOPERATIVETARIFFGUESSs(:, j, :) = ...
+                  [base(1:j-1, j, :); zeros(1,1,S); base(j:end, j, :)];
+          end
+      else
+          % POL: start from zero
+          MFNCOOPERATIVEIMPTARIFFGUESS = zeros(S, N);
+          MFNCOOPERATIVETARIFFGUESSs   = zeros(N, N, S);
+      end
+  end
+
+  %--------------------------------------------------------------%
+  % 2) Transformations for fmincon (keep legacy structure/scale) %
+  %--------------------------------------------------------------%
+  % Average factual import tariff (by importer j, avg over i≠j) → S×N
+  MFNIMPTARIFF = zeros(S, N);
+  for j = 1:N
+      MFNIMPTARIFF(:, j) = reshape(mean(TARIFFs([1:j-1, j+1:N], j, :), 1), S, 1);
+  end
+
+  % TAU rescales the tariff step sizes (legacy trick for conditioning)
+  TAU = 1 + SCALING * MFNIMPTARIFF;                      % S×N
+
+  % Transformed decision variables: cooperative MFN import tariffs
+  CGUESSTRANSF = reshape((1 + SCALING * MFNCOOPERATIVEIMPTARIFFGUESS) ./ TAU, N*S, 1);
+  LBCTRANSF    = reshape((1 + SCALING * LBj) ./ TAU,                          N*S, 1);
+  if LIBONLY == 0
+      UBCTRANSF = reshape((1 + SCALING * UBj) ./ TAU,                         N*S, 1);
+  else
+      UBCTRANSF = ones(N*S, 1);  % only allow reductions
+  end
+
+  %-----------------------------------------------%
+  % 3) Initial point for the full NLP in x-space  %
+  %-----------------------------------------------%
+  % mycounterfactuals builds an initial (G,E,W) guess consistent with Tguess
+  [G0, ~, W0, ~, ~, X0] = mycounterfactuals(MFNCOOPERATIVETARIFFGUESSs, zeros(N,1), LAMBDA);
+
+% --- enforce column vectors (prevents concatenation errors) ---
+G0 = G0(:);  X0 = X0(:);  W0 = W0(:);
+assert(numel(G0)==N && numel(X0)==N && numel(W0)==N, ...
+  'mycounterfactuals returned unexpected sizes: G0=%s, X0=%s, W0=%s.', ...
+  mat2str(size(G0)), mat2str(size(X0)), mat2str(size(W0)));
+
+% proceed
+GUESS = [G0; X0; W0; CGUESSTRANSF];   % (3N + N*S)×1
+
+  % Bounds on x = [G; E; W; C_transf]
+  LB = [0.1*ones(N,1);  0.1*ones(2*N,1); LBCTRANSF];
+  UB = [10*ones(N,1);   10*ones(2*N,1);  UBCTRANSF];
+
+  %----------------------------%
+  % 4) Solve the NLP (fmincon) %
+  %----------------------------%
+  tol = 1e-10;
+  % Keep legacy options/algorithm for backward compatibility
+  opts = optimset('algorithm','active-set','display','off', ...
+                  'TolFun',tol,'TolX',tol,'TolCon',tol, ...
+                  'MaxFunEvals',inf,'MaxIter',5000);
+  x = fmincon(@myfuncoop, GUESS, [], [], [], [], LB, UB, @mymfnconcoop, opts);
+
+  % Constraint residuals at the solution (optional diagnostics)
+  [~, ceq] = mymfnconcoop(x);
+
+  %-----------------------------%
+  % 5) Unpack decision variables %
+  %-----------------------------%
+  GOVERNMENTWELFAREHAT = x(1:N);
+  EXPENDITUREHAT       = x(N+1:2*N);
+  WAGEHAT              = x(2*N+1:3*N);
+  MFNCOOP_TRANSF       = x(3*N+1:end);          % length N*S
+
+  % Back-transform to MFN *import* tariffs (S×N)
+  TEMP_import = (reshape(MFNCOOP_TRANSF, S, N) .* TAU - 1) ./ SCALING;   % S×N
+
+  % Inflate to bilateral cube with zero diagonals: N×N×S
+  MFNCOOPERATIVETARIFFs = zeros(N, N, S);
+  for j = 1:N
+      col = reshape(TEMP_import(:, j), [1, 1, S]);      % 1×1×S
+      block = repmat(col, [N-1, 1, S]);                 % (N-1)×1×S
+      MFNCOOPERATIVETARIFFs(:, j, :) = [block(1:j-1,1,:); zeros(1,1,S); block(j:end,1,:)];
+  end
+
+  %----------------------------------%
+  % 6) Save side-effect files (legacy)
+  %----------------------------------%
+  isBAS = isequal(LAMBDA, ones(N, S));
+  if isBAS
+      if LBj == 0
+          RESTRICTEDMFNCOOPERATIVETARIFFBASs = MFNCOOPERATIVETARIFFs; %#ok<NASGU>
+          save('RESTRICTEDMFNCOOPERATIVETARIFFBASs.mat', 'RESTRICTEDMFNCOOPERATIVETARIFFBASs');
+      elseif LBj < 0
+          UNRESTRICTEDMFNCOOPERATIVETARIFFBASs = MFNCOOPERATIVETARIFFs; %#ok<NASGU>
+          save('UNRESTRICTEDMFNCOOPERATIVETARIFFBASs.mat', 'UNRESTRICTEDMFNCOOPERATIVETARIFFBASs');
+      end
+  else
+      if LBj == 0
+          RESTRICTEDMFNCOOPERATIVETARIFFPOLs = MFNCOOPERATIVETARIFFs; %#ok<NASGU>
+          save('RESTRICTEDMFNCOOPERATIVETARIFFPOLs.mat', 'RESTRICTEDMFNCOOPERATIVETARIFFPOLs');
+      elseif LBj < 0
+          UNRESTRICTEDMFNCOOPERATIVETARIFFPOLs = MFNCOOPERATIVETARIFFs; %#ok<NASGU>
+          save('UNRESTRICTEDMFNCOOPERATIVETARIIFFPOLs.mat', 'UNRESTRICTEDMFNCOOPERATIVETARIFFPOLs');
+      end
+  end
+end
+
+
+% ========= Local utilities =============================================
+
+function G = alignToNNScube(X, TARIFFs)
+%ALIGNTONNSCUBE  Coerce X to an N×N×S cube matching TARIFFs.
+% Accepts any array with the same number of elements; reshapes to size(TARIFFs).
+
+  tgt = size(TARIFFs);   % [N N S]
+  if isequal(size(X), tgt)
+      G = X; 
+      return;
+  end
+  if numel(X) ~= prod(tgt)
+      error('Guess has %d elements; expected %d for N×N×S.', numel(X), prod(tgt));
+  end
+  % Simple, robust reshape. (If the stored guess had permuted dims, the
+  % element order may differ, but dimensions will be consistent and safe.)
+  G = reshape(X, tgt);
+end
