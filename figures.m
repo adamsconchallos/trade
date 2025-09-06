@@ -1,18 +1,26 @@
-%---------------------------------------------------------------
-%This program constructs all figures and some auxilliary results
-%---------------------------------------------------------------
-%Preliminary calculations
-clear all
+%--------------------------------------------------------------------
+% This program constructs all figures and some auxiliary results
+%--------------------------------------------------------------------
+% Preliminary calculations
+clearvars
 close all
 clc
 
-versions={'Main','Low_Sig','Medlow_Sig','Medhigh_Sig','High_Sig','Novar_Sig'};
-copyfile('Data\Main\*.mat','Figures')
-copyfile('Programs\*.m','Figures')
-copyfile('Results\Optimal tariffs\Main\*.mat','Figures')
-copyfile('Results\Trade wars\Main\*.mat','Figures')
-cd('Figures')
+%% User settings (align with results.m structure)
+projectRoot = "C:\\Users\\adams\\OneDrive - University of Florida\\Research\\Emran_trade\\Data_MS_AER_2012_0527";
+versions     = {"Main"};
+figDir       = fullfile(projectRoot, 'Figures');
+if ~exist(figDir, 'dir'), mkdir(figDir); end
+
+% Bring required data and code into the Figures folder
+copyfile(fullfile(projectRoot, 'Data', versions{1}, '*.mat'), figDir);
+copyfile(fullfile(projectRoot, 'Programs', '*.m'),         figDir);
+copyfile(fullfile(projectRoot, 'Results', 'Optimal tariffs', versions{1}, '*.mat'), figDir);
+copyfile(fullfile(projectRoot, 'Results', 'Trade wars',     versions{1}, '*.mat'), figDir);
+
+cd(figDir);
 mycalculations
+
 
 %Constructing Figure 1: Optimal tariffs without lobbying
 load OPTIMALTARIFFBAS
@@ -942,13 +950,13 @@ set(legend1,'FontSize',7,'location','northwest');
 saveas (gcf,'figure8','fig');
 close
 
-%Cleaning up
+% Cleaning up
 delete *.mat
 delete *.m
-cd ..
+cd(projectRoot);
 
-clear all
+clearvars
 close all
 clc
 
-%This is checked and correct
+% This is checked and correct
