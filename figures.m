@@ -11,6 +11,8 @@ projectRoot = fileparts(mfilename('fullpath'));
 origDir = pwd;
 figDir = fullfile(projectRoot,'Figures');
 vers = versions{1};
+% Copy key datasets and helper code into Figures/ for self-contained
+% plotting. These temporary files are removed at the end of the script.
 copyfile(fullfile(projectRoot,'Data','Main','*.mat'),figDir)
 copyfile(fullfile(projectRoot,'Programs','*.m'),figDir)
 copyfile(fullfile(projectRoot,'Results','Optimal tariffs',vers,'*.mat'),figDir)
@@ -18,11 +20,14 @@ copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),figDir)
 cd(figDir)
 mycalculations
 
+% Figure 1 uses OPTIMALTARIFFBAS.mat to display optimal tariffs without
+% lobbying. Tariffs are reshaped to an exporter-by-sector matrix, merged
+% with elasticity data (SIGMA) for ranking, and plotted for each importer.
 %Constructing Figure 1: Optimal tariffs without lobbying
 load OPTIMALTARIFFBAS
 for j=1:N
 OPTIMALTARIFFj=OPTIMALTARIFFBAS(:,j);
-TEMP=reshape(OPTIMALTARIFFj,N-1,S);
+TEMP=reshape(OPTIMALTARIFFj,N-1,S);   % (N-1) exporters × S sectors
 TEMP=[TEMP(1:j-1,:);zeros(1,S);TEMP(j:end,:)];
 TEMP=[100*TEMP;SIGMA'];
 TEMP=sortrows(TEMP',8)';
@@ -151,6 +156,9 @@ end
 saveas (gcf,'figure1','fig');
 close
 
+% Figure 2 compares observed target tariffs with model-implied MFN optimal
+% tariffs under lobbying. Sorting by tariff level highlights how the model
+% tracks the data across sectors.
 %Constructing Figure 2: Optimal tariffs with lobbying
 for j=1:N
 TEMP=sortrows(100*[TARGETTARIFF(:,j),MFNOPTIMALTARIFFPOL(:,j)],1);
@@ -213,10 +221,12 @@ end
 saveas (gcf,'figure2','fig');
 close
 
+% Figure 3 visualizes Nash equilibrium tariffs without lobbying. Bilateral
+% Nash tariffs are reshaped to N×S matrices and sorted by elasticity.
 %Constructing Figure 3: Nash tariffs without lobbying
 load NASHTARIFFBASs
 for j=1:N
-TEMP=reshape(NASHTARIFFBASs(:,j,:),N,S);    
+TEMP=reshape(NASHTARIFFBASs(:,j,:),N,S);   % N partners × S sectors for importer j
 TEMP=[100*TEMP;SIGMA'];
 TEMP=sortrows(TEMP',8)';
 TEMP=[TEMP;1:1:S];
@@ -344,13 +354,16 @@ end
 saveas (gcf,'figure3','fig');
 close
 
+% Figure 4 depicts Nash equilibrium tariffs when lobbying is present. We
+% adjust Japan's column to match bounds used in Figure 2, derive MFN
+% averages, and compare them with observed target tariffs.
 %Constructing Figure 4: Nash tariffs with lobbying
 load MFNNASHTARIFFPOLs
 MFNNASHTARIFFPOLCLEANs=MFNNASHTARIFFPOLs;
 j=5;
 UB=max(TARGETTARIFF(:,j)+0.03,2.25);
 MFNOPTIMALTARIFFj=mymfnoptimaltariffj(j,MFNNASHTARIFFPOLs,LAMBDAPOL,0,UB,TARGETTARIFF(:,j)); %Recomputing for Japan with same UB as in Figure 2
-TEMP=repmat(reshape(MFNOPTIMALTARIFFj,[1 1 S]),[N-1,1,1]);
+TEMP=repmat(reshape(MFNOPTIMALTARIFFj,[1 1 S]),[N-1,1,1]); % replicate S×1 vector across exporters
 MFNNASHTARIFFPOLCLEANs(:,j,:)=[TEMP(1:j-1,:,:);zeros(1,1,S);TEMP(j:end,:,:)];
 save('MFNNASHTARIFFPOLCLEANs','MFNNASHTARIFFPOLCLEANs')
 
@@ -358,7 +371,7 @@ MFNNASHTARIFFPOLCLEAN=zeros(S,N);
 for j=1:N
     TEMP=MFNNASHTARIFFPOLCLEANs(:,j,:);
     TEMP(j,:,:)=[];
-    MFNNASHTARIFFPOLCLEAN(:,j)=reshape(mean(TEMP,1),S,1);
+    MFNNASHTARIFFPOLCLEAN(:,j)=reshape(mean(TEMP,1),S,1); % average across exporters -> S×1
 end
 
 for j=1:N
@@ -422,6 +435,9 @@ end
 saveas (gcf,'figure4','fig');
 close
 
+% Figure 5 examines cooperative tariffs when talks begin from the Nash
+% equilibrium. Bilateral cooperative tariffs are reshaped and ranked by
+% elasticity to illustrate negotiated outcomes.
 %Constructing Figure 5: Cooperative tariffs starting at Nash tariffs
 cd(origDir)
 copyfile(fullfile(projectRoot,'Results','Trade talks',vers,'Nash_Bas','*.mat'),figDir)
@@ -430,7 +446,7 @@ load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
 for j=1:N
-TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S); % N partners × S sectors
 TEMP=[100*TEMP;SIGMA'];
 TEMP=sortrows(TEMP',8)';
 TEMP=[TEMP;1:1:S];
@@ -558,6 +574,9 @@ end
 saveas (gcf,'figure5','fig');
 close
 
+% Figure 6 repeats the cooperative-tariff exercise but starts from factual
+% tariffs. Results from the 'Fact' scenario are reshaped and ranked by
+% elasticity for comparison.
 %Constructing Figure 6: Cooperative tariffs starting at factual tariffs
 
 cd(origDir)
@@ -567,7 +586,7 @@ load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
 for j=1:N
-TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S); % N partners × S sectors
 TEMP=[100*TEMP;SIGMA'];
 TEMP=sortrows(TEMP',8)';
 TEMP=[TEMP;1:1:S];
@@ -695,6 +714,9 @@ end
 saveas (gcf,'figure6','fig');
 close
 
+% Figure 7 shows cooperative tariffs when negotiations begin from free
+% trade. We load the "Free" scenario results, reshape the tariff cube and
+% rank sectors by elasticity to show outcomes from a zero‐tariff baseline.
 %Constructing Figure 7: Cooperative tariffs starting at free trade
 
 cd(origDir)
@@ -704,7 +726,7 @@ load UNRESTRICTEDCOOPERATIVETARIFFBASs
 COOPERATIVETARIFFs=UNRESTRICTEDCOOPERATIVETARIFFBASs;
 
 for j=1:N
-TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S);    
+TEMP=reshape(COOPERATIVETARIFFs(:,j,:),N,S); % N partners × S sectors
 TEMP=[100*TEMP;SIGMA'];
 TEMP=sortrows(TEMP',8)';
 TEMP=[TEMP;1:1:S];
@@ -832,14 +854,15 @@ end
 saveas (gcf,'figure7','fig');
 close
 
+% Figure 8 explores liberalization starting from MFN Nash tariffs. We load the Nash baseline, convert trade and tariff cubes to (N*S)×N matrices for the GE solver, then simulate tariff cuts among major economies.
 %Constructing Figure 8: Liberalization scenarios starting at MFN Nash tariffs
 load MFNNASHTARIFFBASs
 LAMBDA=LAMBDABAS;
 NASHTARIFFs=MFNNASHTARIFFBASs;
 
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs LOBBYWELFAREHAT EXPENDITUREHAT]=mycounterfactuals(NASHTARIFFs,zeros(N,1),LAMBDA);
-TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); %these are now trade flows at Nash tariffs
-TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  %these are now Nash tariffs
+TRADE=reshape(permute(TRADECs,[1 3 2]),[N*S,N,1]); % trade flows cube -> (N*S)×N
+TARIFF=reshape(permute(NASHTARIFFs,[1 3 2]),[N*S,N,1]);  % Nash tariffs cube -> (N*S)×N
 save('DATA','SIGMA','TARIFF','TRADE','LAMBDAPOL','LAMBDABAS')
 mycalculations
 
@@ -947,8 +970,11 @@ saveas (gcf,'figure8','fig');
 close
 
 %Cleaning up
-delete(fullfile(figDir,'*.mat'))
-delete(fullfile(figDir,'*.m'))
+% Remove the temporary data (.mat) and code (.m) files copied to the
+% Figures/ directory above. They were needed only for plot generation and
+% are deleted to avoid leaving redundant artifacts.
+delete(fullfile(figDir,'*.mat'))  % temporary data files
+delete(fullfile(figDir,'*.m'))    % temporary helper scripts
 cd(origDir)
 
 clear all

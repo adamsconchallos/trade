@@ -60,6 +60,7 @@ for v = 1:numel(versions)
     mycalculations;
     % Factual GE‐consistent trade (eqs. 10–13)
     [~,~,~,TRADECs] = mycounterfactuals(TARIFFs, zeros(N,1), ones(N,S));
+    % Convert trade cube N×N×S to (N*S)×N matrix (sectors stacked for each importer)
     TRADE = reshape(permute(TRADECs, [1 3 2]), [N*S, N, 1]);
     save DATA.mat -append TRADE;
 
@@ -96,6 +97,7 @@ for v = 1:numel(versions)
 
     N = size(TARIFF, 2);
     S = size(TARIFF, 1) / N;
+    % Raw TARIFF is [S·N × N]; reshape to N×N×S and swap dims to [importer, exporter, sector]
     TARIFFs = permute(reshape(TARIFF', [N, N, S]), [2, 1, 3]);
 
     MFNOPTIMALTARIFFBAS = zeros(S, N);
@@ -305,6 +307,7 @@ function seedScenario(root, vers, sub)
             load NASHTARIFFBASs.mat
             T0 = NASHTARIFFBASs;
             [~,~,~,TRADECs] = mycounterfactuals(T0, zeros(N,1), LAMBDABAS);
+            % Flatten cubes for GE call: N×N×S -> (N*S)×N
             TARIFF = reshape(permute(T0,[1 3 2]), [N*S, N, 1]);
             TRADE  = reshape(permute(TRADECs,[1 3 2]), [N*S, N, 1]);
             save('DATA.mat','SIGMA','TARIFF','TRADE','LAMBDABAS','LAMBDAPOL','-mat');
@@ -313,6 +316,7 @@ function seedScenario(root, vers, sub)
             load NASHTARIFFPOLs.mat
             T0 = NASHTARIFFPOLs;
             [~,~,~,TRADECs] = mycounterfactuals(T0, zeros(N,1), LAMBDAPOL);
+            % Flatten cubes for GE call: N×N×S -> (N*S)×N
             TARIFF = reshape(permute(T0,[1 3 2]), [N*S, N, 1]);
             TRADE  = reshape(permute(TRADECs,[1 3 2]), [N*S, N, 1]);
             save('DATA.mat','SIGMA','TARIFF','TRADE','LAMBDABAS','LAMBDAPOL','-mat');
@@ -320,6 +324,7 @@ function seedScenario(root, vers, sub)
         case 'Free'
             T0 = zeros(size(TARIFFs));      % N×N×S
             [~,~,~,TRADECs] = mycounterfactuals(T0, zeros(N,1), LAMBDABAS);
+            % Flatten cubes for GE call: N×N×S -> (N*S)×N
             TARIFF = reshape(permute(T0,[1 3 2]), [N*S, N, 1]);
             TRADE  = reshape(permute(TRADECs,[1 3 2]), [N*S, N, 1]);
             save('DATA.mat','SIGMA','TARIFF','TRADE','LAMBDABAS','LAMBDAPOL','-mat');
