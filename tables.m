@@ -18,6 +18,9 @@ copyfile(fullfile(projectRoot,'Results','Trade wars',vers,'*.mat'),tablesDir)
 cd(tablesDir)
 mycalculations
 
+home     = N;        % last importer (e.g., U.S.); keeps script dimension agnostic
+partners = 1:N-1;    % all exporters trading with home
+
 %Constructing Table 1: Parameter estimates
 TEMP=sortrows([LABELS,num2cell([SIGMA,LAMBDAPOL'])],-2);
 TEMP1=[[TEMP(:,1);'avg'],[TEMP(:,2:end);num2cell(mean([SIGMA,LAMBDAPOL']))]];
@@ -32,31 +35,31 @@ save(fullfile(tablesDir,'TABLE1'),'TABLE1','TOP5')
 %Constructing Table 2: Examples
 S1=24; %this is the chemicals, rubber, and plastics industry (low elasticity)
 TARIFFCs=TARIFFs;
-TARIFFCs(1:6,7,S1)=TARIFFCs(1:6,7,S1)+.50;
+TARIFFCs(partners,home,S1)=TARIFFCs(partners,home,S1)+.50;  % raise tariffs on all partners
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(TARIFFCs,zeros(N,1),ones(N,S));
 SALESHATs=(sum(TRADECs,2)./sum(TRADEs,2))./repmat(WAGEHAT,[1 1 S]);
-TEMP1=SALESHATs(7,:,S1);
+TEMP1=SALESHATs(home,:,S1);
 SALESHATs(:,:,S1)=[];
-TEMP2=mean(SALESHATs(7,:,:));
-TEMP=100*([WAGEHAT(7),TEMP1,TEMP2]-1);
+TEMP2=mean(SALESHATs(home,:,:));
+TEMP=100*([WAGEHAT(home),TEMP1,TEMP2]-1);
 TEMP(:,1)=TEMP(:,1)-mean(100*(WAGEHAT-1));
 TABLE21=round(100*TEMP)./100;
 [TOTEFFECT PROFEFFECT TRADEEFFECT]=mydecomposition(TARIFFCs,zeros(N,1),ones(N,S));
-TABLE23=round(100*[100*(WELFAREHAT(7)-1),TOTEFFECT(7) PROFEFFECT(7)])./100;
+TABLE23=round(100*[100*(WELFAREHAT(home)-1),TOTEFFECT(home) PROFEFFECT(home)])./100;
 
 S2=20; %this is the wearing apparel industry (high elasticity)
 TARIFFCs=TARIFFs;
-TARIFFCs(1:6,7,S2)=TARIFFCs(1:6,7,S2)+.50;
+TARIFFCs(partners,home,S2)=TARIFFCs(partners,home,S2)+.50;  % identical experiment for high elasticity
 [GOVERNMENTWELFAREHAT WELFAREHAT WAGEHAT TRADECs]=mycounterfactuals(TARIFFCs,zeros(N,1),ones(N,S));
 SALESHATs=(sum(TRADECs,2)./sum(TRADEs,2))./repmat(WAGEHAT,[1 1 S]);
-TEMP1=SALESHATs(7,:,S2);
+TEMP1=SALESHATs(home,:,S2);
 SALESHATs(:,:,S2)=[];
-TEMP2=mean(SALESHATs(7,:,:));
-TEMP=100*([WAGEHAT(7),TEMP1,TEMP2]-1);
+TEMP2=mean(SALESHATs(home,:,:));
+TEMP=100*([WAGEHAT(home),TEMP1,TEMP2]-1);
 TEMP(:,1)=TEMP(:,1)-mean(100*(WAGEHAT-1));
 TABLE22=round(100*TEMP)./100;
 [TOTEFFECT PROFEFFECT TRADEEFFECT]=mydecomposition(TARIFFCs,zeros(N,1),ones(N,S));
-TABLE24=round(100*[100*(WELFAREHAT(7)-1),TOTEFFECT(7) PROFEFFECT(7)])./100;
+TABLE24=round(100*[100*(WELFAREHAT(home)-1),TOTEFFECT(home) PROFEFFECT(home)])./100;
 TABLE2=[TABLE21;TABLE22;TABLE23;TABLE24];
 save('TABLE2','TABLE2')
 
@@ -278,8 +281,8 @@ for v=2:4
     
     MEANSIGMA=round(100*mean(SIGMA))./100;
 
-    TABLE3c_BAS=[TABLE3c_BAS;[MEANSIGMA TABLE3a_TEMP(8,:)]];
-    TABLE3c_POL=[TABLE3c_POL;[MEANSIGMA TABLE3b_TEMP(8,:)]];
+    TABLE3c_BAS=[TABLE3c_BAS;[MEANSIGMA TABLE3a_TEMP(end,:)]];
+    TABLE3c_POL=[TABLE3c_POL;[MEANSIGMA TABLE3b_TEMP(end,:)]];
     
     cd(projectRoot)
     cd(projectRoot)
@@ -511,8 +514,8 @@ for v=2:4
     
     MEANSIGMA=round(100*mean(SIGMA))./100;
 
-    TABLE8c_BAS=[TABLE8c_BAS;[MEANSIGMA TABLE8a_TEMP(8,:)]];
-    TABLE8c_POL=[TABLE8c_POL;[MEANSIGMA TABLE8b_TEMP(8,:)]];
+    TABLE8c_BAS=[TABLE8c_BAS;[MEANSIGMA TABLE8a_TEMP(end,:)]];
+    TABLE8c_POL=[TABLE8c_POL;[MEANSIGMA TABLE8b_TEMP(end,:)]];
     
     cd(projectRoot)
     cd(projectRoot)
@@ -626,8 +629,8 @@ for v=2:4
 
     MEANSIGMA=round(100*mean(SIGMA))./100;
 
-    TABLE4c_BAS=[TABLE4c_BAS;[MEANSIGMA TABLE4a_TEMP(8,:)]];
-    TABLE4c_POL=[TABLE4c_POL;[MEANSIGMA TABLE4b_TEMP(8,:)]];
+    TABLE4c_BAS=[TABLE4c_BAS;[MEANSIGMA TABLE4a_TEMP(end,:)]];
+    TABLE4c_POL=[TABLE4c_POL;[MEANSIGMA TABLE4b_TEMP(end,:)]];
     
     cd(projectRoot)
     cd(projectRoot)
@@ -741,8 +744,8 @@ for v=2:4
 
     MEANSIGMA=round(100*mean(SIGMA))./100;
 
-    TABLE9c_BAS=[TABLE9c_BAS;[MEANSIGMA TABLE9a_TEMP(8,:)]];
-    TABLE9c_POL=[TABLE9c_POL;[MEANSIGMA TABLE9b_TEMP(8,:)]];
+    TABLE9c_BAS=[TABLE9c_BAS;[MEANSIGMA TABLE9a_TEMP(end,:)]];
+    TABLE9c_POL=[TABLE9c_POL;[MEANSIGMA TABLE9b_TEMP(end,:)]];
     
     cd(projectRoot)
     cd(projectRoot)
@@ -1335,8 +1338,8 @@ for v=2:4
     
     MEANSIGMA=mean(SIGMA);
     
-    TABLE5c_BAS=[TABLE5c_BAS;[MEANSIGMA TABLE5a_TEMP(8,:)]];
-    TABLE5c_POL=[TABLE5c_POL;[MEANSIGMA TABLE5b_TEMP(8,:)]];
+    TABLE5c_BAS=[TABLE5c_BAS;[MEANSIGMA TABLE5a_TEMP(end,:)]];
+    TABLE5c_POL=[TABLE5c_POL;[MEANSIGMA TABLE5b_TEMP(end,:)]];
     
     cd(projectRoot)    
 end
@@ -1925,8 +1928,8 @@ for v=2:4
     
     MEANSIGMA=mean(SIGMA);
     
-    TABLE10c_BAS=[TABLE10c_BAS;[MEANSIGMA TABLE10a_TEMP(8,:)]];
-    TABLE10c_POL=[TABLE10c_POL;[MEANSIGMA TABLE10b_TEMP(8,:)]];
+    TABLE10c_BAS=[TABLE10c_BAS;[MEANSIGMA TABLE10a_TEMP(end,:)]];
+    TABLE10c_POL=[TABLE10c_POL;[MEANSIGMA TABLE10b_TEMP(end,:)]];
     
     cd(projectRoot)    
 end
