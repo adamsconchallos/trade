@@ -27,8 +27,13 @@ TEMP1=[[TEMP(:,1);'avg'],[TEMP(:,2:end);num2cell(mean([SIGMA,LAMBDAPOL']))]];
 TABLE1=[TEMP1(:,1),num2cell(round(100*cell2mat(TEMP1(:,2:end)))./100)];
 TOP5=[];
 for j=1:N
-TEMP1=sortrows([TEMP(:,1),TEMP(:,2+j)],-2);
-TOP5=[TOP5,TEMP1(1:5,1)];
+    TEMP1 = sortrows([TEMP(:,1), TEMP(:,2+j)], -2);
+    k = min(5,size(TEMP1,1));          % limit to available industries
+    col = TEMP1(1:k,1);                 % top-k industry labels
+    if k < 5                            % pad so every column has 5 rows
+        col(end+1:5,1) = {''};
+    end
+    TOP5 = [TOP5, col];
 end
 save(fullfile(tablesDir,'TABLE1'),'TABLE1','TOP5')
 
