@@ -35,7 +35,7 @@ function NASHTARIFFs = mynashtariff(LAMBDA, LBj, UBj, NASHTARIFFGUESSs)
   for j = 1:N
       tmp = TARIFF_curr(:, j, :);              % [N×1×S]
       tmp(j,:,:) = [];                         % drop diagonal row i=j
-      OPTIMALTARIFFGUESS(:, j) = reshape(tmp, (N-1)*S, 1);
+      OPTIMALTARIFFGUESS(:, j) = reshape(tmp, (N-1)*S, 1); % flatten to vector for optimiser
   end
 
   % ---- Iteration controls ---------------------------------------------
