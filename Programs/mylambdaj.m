@@ -16,7 +16,7 @@ function [lambda_j, mfnTariff_j] = mylambdaj(j, targetTariff_j)
   rawT   = DATA.TARIFF;                 % [S·N × N]
 [Nrows, N] = size(rawT);
 S = Nrows / N;  assert(mod(S,1)==0,'mylambdaj: bad TARIFF shape.');
-TARIFFs = permute(reshape(rawT',[N,N,S]), [2,1,3]);
+TARIFFs = permute(reshape(rawT',[N,N,S]), [2,1,3]); % raw [S·N×N] -> cube importer×exporter×sector
 
   %% 2) Set bounds and prohibitive flags
   isProhib = (targetTariff_j > 2.25);        % identify prohibitive targets

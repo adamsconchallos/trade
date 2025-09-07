@@ -30,13 +30,13 @@ function [MFNCOOPERATIVETARIFFs, GOVERNMENTWELFAREHAT, EXPENDITUREHAT, WAGEHAT, 
           assert(numel(MFNCOOPERATIVETARIFFGUESSs)==N*N*S, ...
                  'Guess has %d elements; expected %d for N×N×S.', ...
                   numel(MFNCOOPERATIVETARIFFGUESSs), N*N*S);
-          MFNCOOPERATIVETARIFFGUESSs = reshape(MFNCOOPERATIVETARIFFGUESSs, [N N S]);
+          MFNCOOPERATIVETARIFFGUESSs = reshape(MFNCOOPERATIVETARIFFGUESSs, [N N S]); % ensure guess is N×N×S cube
       end
       % MFN import guess = average across sources i≠j for each importer j and sector s
       MFNCOOPERATIVEIMPTARIFFGUESS = zeros(S, N);
       for j = 1:N
           MFNCOOPERATIVEIMPTARIFFGUESS(:, j) = reshape( ...
-              mean(MFNCOOPERATIVETARIFFGUESSs([1:j-1, j+1:N], j, :), 1), [S,1]);
+              mean(MFNCOOPERATIVETARIFFGUESSs([1:j-1, j+1:N], j, :), 1), [S,1]); % avg over partners -> S×1
       end
   else
       if isequal(LAMBDA, ones(N,S))
@@ -61,7 +61,7 @@ function [MFNCOOPERATIVETARIFFs, GOVERNMENTWELFAREHAT, EXPENDITUREHAT, WAGEHAT, 
   % MFN factual import tariffs (S×N): average over partners i≠j
   MFNIMPTARIFF = zeros(S,N);
   for j=1:N
-      MFNIMPTARIFF(:,j) = reshape(mean(TARIFFs([1:j-1, j+1:N], j, :), 1), [S,1]);
+      MFNIMPTARIFF(:,j) = reshape(mean(TARIFFs([1:j-1, j+1:N], j, :), 1), [S,1]); % MFN avg tariffs for importer j
   end
 
   TAU = 1 + SCALING * MFNIMPTARIFF;                      % S×N
